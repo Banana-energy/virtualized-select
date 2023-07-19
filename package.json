@@ -2,7 +2,12 @@
   "name": "virtualized-select",
   "version": "0.0.1",
   "private": false,
+  "author": {
+    "email": "372728339@qq.com",
+    "name": "Banana Energy"
+  },
   "main": "dist/virtualized-select.umd.min.js",
+  "LICENSE": "MIT",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
