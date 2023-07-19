@@ -1,28 +1,46 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <el-form ref="form" :model="form">
+      <el-form-item label="单选">
+        <virtualized-select
+          v-model="form.signal"
+          :options="list"
+        />
+      </el-form-item>
+      <el-form-item label="多选">
+        <virtualized-select
+          v-model="form.multiple"
+          multiple
+          :clearable="false"
+          :options="list"
+        />
+      </el-form-item>
+    </el-form>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import VirtualizedSelect from './components/VirtualizedSelect.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    VirtualizedSelect
+  },
+  data () {
+    return {
+      form: {
+        signal: '',
+        multiple: []
+      },
+      list: new Array(10000 * 3).fill().map((_, index) => ({
+        label: index.toString(),
+        value: index
+      }))
+    }
   }
 }
 </script>
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+<style>
 </style>
