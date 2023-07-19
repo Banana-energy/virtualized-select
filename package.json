@@ -2,12 +2,12 @@
   "name": "virtualized-select",
   "version": "0.0.2",
   "private": false,
-  "author": {
-    "email": "372728339@qq.com",
-    "name": "Banana Energy"
-  },
+  "author": "Banana Energy <372728339@qq.com>",
+  "description": "A virtualized select component for Vue2",
+  "repository": "https://github.com/Banana-energy/virtualized-select",
   "main": "dist/virtualized-select.umd.min.js",
-  "LICENSE": "MIT",
+  "keywords": ["vue", "Banana Energy", "select", "element-ui", "vxe-table", "virtualized-select","virtual select"],
+  "license": "MIT",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
