@@ -1,11 +1,13 @@
 {
   "name": "virtualized-select",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": false,
+  "main": "dist/virtualized-select.umd.min.js",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
+    "build:lib": "vue-cli-service build --target lib --name virtualized-select --dest ./dist/ ./src/install.js",
     "release": "standard-version",
     "pub": "npm run build:lib && npm run release && npm publish && git push --follow-tags origin master"
   },
