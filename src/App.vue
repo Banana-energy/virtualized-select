@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+    <el-button size="small" type="primary" @click="getList(5)">加载5w数据</el-button>
+    <el-button size="small" type="primary" @click="getList(10)">加载10w数据</el-button>
+    <el-divider />
     <el-form ref="form" :model="form">
       <el-form-item label="单选">
         <virtualized-select
@@ -37,6 +40,15 @@ export default {
         label: index.toString(),
         value: index
       }))
+    }
+  },
+  methods: {
+    getList (num) {
+      this.list = Object.freeze(new Array(10000 * num).fill().map((_, index) => ({
+        label: index.toString(),
+        value: index
+      })))
+      this.$message.success(`加载${num}w数据成功`)
     }
   }
 }

@@ -16,7 +16,7 @@
         @mouseleave.native="inputHovering = false"
       >
         <template #suffix>
-          <i v-show="!showClose" :class="['el-select__caret', 'el-input__icon', 'el-icon-' + iconClass]" />
+          <i v-show="!showClose" :class="['el-select__caret', 'el-input__icon', 'el-icon-' + iconClass]"/>
           <i
             v-show="showClose"
             class="el-input__icon el-icon-circle-close"
@@ -51,7 +51,7 @@
           <transition-group v-if="!collapseTags" @after-leave="resetInputHeight">
             <el-tag v-for="(item,index) in value" :key="item" closable type="info" @close="deleteTag(index)">
               <span class="el-select__tags-text">
-                {{ item && options.find(option => option[propsValue.value] === item)[propsValue.label] }}
+                {{ item && optionsMap.get(item)[propsValue.label] }}
               </span>
             </el-tag>
           </transition-group>
@@ -93,6 +93,7 @@
     <template v-else #dropdown>
       <vxe-list
         ref="vxe-list"
+        v-bind="virtualListProps"
         :data="filterOptions"
         :loading="loading"
         :style="{width: maxOptionWidth+'px'}"
@@ -101,7 +102,7 @@
         <template #default="{ items }">
           <div
             v-for="item in items"
-            :key="item.value"
+            :key="item[propsValue.value]"
             :class="{selected: multiple ? value.includes(item[propsValue.value]) : value === item[propsValue.value] }"
             class="vxe-select-option"
             @click="handleSelect(item)"
@@ -171,6 +172,10 @@ export default {
     reserveKeyword: {
       type: Boolean,
       default: false
+    },
+    virtualListProps: {
+      type: Object,
+      default: () => ({})
     }
   },
   data () {
@@ -186,10 +191,19 @@ export default {
     }
   },
   computed: {
+    optionsMap () {
+      const map = new Map()
+      const valueKey = this.propsValue.value
+      this.options.forEach(option => {
+        map.set(option[valueKey], option)
+      })
+      return Object.freeze(map)
+    },
     showClose () {
+      const value = this.value
       const hasValue = this.multiple
-        ? Array.isArray(this.value) && this.value.length > 0
-        : this.value !== undefined && this.value !== null && this.value !== ''
+        ? Array.isArray(value) && value.length > 0
+        : value !== undefined && value !== null && value !== ''
       return this.clearable &&
         !this.disabled &&
         this.inputHovering &&
@@ -207,9 +221,9 @@ export default {
     },
     selected () {
       if (!this.multiple) {
-        return this.options.find(option => option[this.propsValue.value] === this.value)
+        return this.optionsMap.get(this.value)
       } else {
-        return this.options.find(option => option[this.propsValue.value] === this.value?.[0])
+        return this.optionsMap.get(this.value?.[0])
       }
     },
     selectedLabel () {
@@ -219,14 +233,15 @@ export default {
       if (this.multiple) {
         return this.value?.length || this.multipleQuery ? '' : this.placeholder
       } else {
-        const value = this.options.find(option => option[this.propsValue.value] === this.value)?.[this.propsValue.label]
+        const value = this.optionsMap.get(this.value)?.[this.propsValue.label]
         return value || (this.inputShow ? '' : this.placeholder)
       }
     },
     maxOptionWidth () {
       let maxStr = ''
+      const labelKey = this.propsValue.label
       this.options.forEach(option => {
-        const str = option[this.propsValue.label]
+        const str = option[labelKey]
         const length = str.length
         if (length > maxStr.length) {
           maxStr = str
@@ -236,20 +251,21 @@ export default {
       ctx.font = '14px sans-serif'
       const max = ctx.measureText(maxStr).width + 20
       ctx = null
-      const minWidth = parseFloat(this.$refs['virtualized-select']?.panelStyle?.minWidth || 191)
+      const targetWidth = this.$refs['virtualized-select']?.$refs.content.offsetWidth
+      const minWidth = parseFloat(targetWidth || 191)
       return max < minWidth ? minWidth : max
     }
   },
   watch: {
-    options (val) {
-      this.filterOptions = Array.isArray(val) ? val : []
-      const value = val.find(option => option[this.propsValue.value] === this.value)?.[this.propsValue.label]
+    optionsMap (val) {
+      this.filterOptions = Array.isArray(this.options) ? this.options : []
+      const value = val.get(this.value)?.[this.propsValue.label]
       this.inputShow = value || ''
     },
     value: {
       handler (newVal) {
         if (!this.multiple) {
-          const value = this.options.find(option => option[this.propsValue.value] === newVal)?.[this.propsValue.label]
+          const value = this.optionsMap.get(newVal)?.[this.propsValue.label]
           this.inputShow = value || ''
           this.inputLength = 20
           return
@@ -257,6 +273,9 @@ export default {
         this.resetInputHeight()
         if (this.multiple && Array.isArray(newVal) && newVal.length && newVal[0] === undefined) {
           this.$emit('input', [])
+        }
+        if (!this.collapseTags) {
+          this.$refs['virtualized-select']?.updatePlacement()
         }
       },
       deep: true
@@ -316,14 +335,16 @@ export default {
         this.focused = false
         this.$refs['virtualized-select'].hidePanel()
       }
-      // this.filterOptions = this.options
-      // this.multipleQuery = ''
     },
     handleFilter () {
+      const labelKey = this.propsValue.label
+      const options = this.options
       if (this.multiple) {
-        this.filterOptions = this.multipleQuery ? this.options.filter(item => item?.[this.propsValue.label]?.toLowerCase().indexOf(this.multipleQuery.trim().toLowerCase()) > -1) : this.options
+        const query = this.multipleQuery.trim().toLowerCase()
+        this.filterOptions = this.multipleQuery ? options.filter(item => item?.[labelKey]?.toLowerCase().indexOf(query) > -1) : options
       } else {
-        this.filterOptions = this.inputShow ? this.options.filter(item => item?.[this.propsValue.label]?.toLowerCase().indexOf(this.inputShow.trim().toLowerCase()) > -1) : this.options
+        const query = this.inputShow.trim().toLowerCase()
+        this.filterOptions = this.inputShow ? options.filter(item => item?.[labelKey]?.toLowerCase().indexOf(query) > -1) : options
       }
     },
     handleInput (e) {
@@ -344,12 +365,14 @@ export default {
       value.splice(index, 1)
       this.$emit('input', value)
     },
-    handleClear (e) {
+    handleClear () {
       if (this.multiple) {
         this.multipleQuery = ''
         this.filterOptions = this.options
         this.$emit('input', [])
       } else {
+        this.inputShow = ''
+        this.filterOptions = this.options
         this.$emit('input', '')
       }
     },
@@ -377,8 +400,7 @@ export default {
         input.style.height = this.value.length === 0
           ? sizeInMap + 'px'
           : Math.max(
-            tags ? (tagsHeight + (tagsHeight > sizeInMap ? 6 : 0)) : 0,
-            sizeInMap
+            tags ? (tagsHeight + (tagsHeight > sizeInMap ? 6 : 0)) : 0, sizeInMap
           ) + 'px'
       })
     }
