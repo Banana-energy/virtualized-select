@@ -50,8 +50,11 @@
           </span>
           <transition-group v-if="!collapseTags" @after-leave="resetInputHeight">
             <el-tag v-for="(item,index) in value" :key="item" closable type="info" @close="deleteTag(index)">
-              <span class="el-select__tags-text">
-                {{ item && optionsMap.get(item)[propsValue.label] }}
+              <span v-if="optionsMap.has(item)" class="el-select__tags-text">
+                {{ optionsMap.get(item)[propsValue.label] }}
+              </span>
+              <span v-else class="el-select__tags-text">
+                {{ item }}
               </span>
             </el-tag>
           </transition-group>
@@ -103,16 +106,12 @@
           <div
             v-for="item in items"
             :key="item[propsValue.value]"
-            :class="{selected: multiple ? value.includes(item[propsValue.value]) : value === item[propsValue.value] }"
+            :class="{ selected: multiple ? value.includes(item[propsValue.value]) : value === item[propsValue.value] }"
             class="vxe-select-option"
             @click="handleSelect(item)"
           >
             <span>{{ item[propsValue.label] }}</span>
-            <i
-              v-show="multiple ? value.includes(item[propsValue.value]) : value === item[propsValue.value]"
-              class="el-icon-check"
-              style="font-weight: 700"
-            />
+            <i class="el-icon-check"/>
           </div>
         </template>
       </vxe-list>
@@ -257,9 +256,15 @@ export default {
   },
   watch: {
     optionsMap (val) {
-      this.filterOptions = Array.isArray(this.options) ? this.options : []
-      const value = val.get(this.value)?.[this.propsValue.label]
-      this.inputShow = value || ''
+      if (!this.multiple) {
+        this.filterOptions = Array.isArray(this.options) ? this.options : []
+        const value = val.get(this.value)?.[this.propsValue.label]
+        if (this.value && !value) {
+          this.inputShow = this.value
+          return
+        }
+        this.inputShow = value || ''
+      }
     },
     value: {
       handler (newVal) {
@@ -274,7 +279,9 @@ export default {
           this.$emit('input', [])
         }
         if (!this.collapseTags) {
-          this.$refs['virtualized-select']?.updatePlacement()
+          this.$nextTick(() => {
+            this.$refs['virtualized-select']?.updatePlacement()
+          })
         }
       },
       deep: true
@@ -410,7 +417,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .vxe-select-option {
   cursor: pointer;
   color: #606266;
@@ -429,9 +436,18 @@ export default {
   background-color: #f5f7fa;
 }
 
+.el-icon-check {
+  display: none;
+}
+
 .selected {
   color: #409eff;
   font-weight: 700;
+
+  > .el-icon-check {
+    display: inline-block;
+    font-weight: 700
+  }
 }
 
 .loading {
