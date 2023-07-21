@@ -8,12 +8,12 @@
   "main": "dist/virtualized-select.umd.min.js",
   "keywords": [
     "vue",
-    "Banana Energy",
     "select",
     "element-ui",
     "vxe-table",
     "virtualized-select",
-    "virtual select"
+    "virtual select",
+    "virtualized-list"
   ],
   "license": "MIT",
   "scripts": {
@@ -47,5 +47,10 @@
     "sass-loader": "^12.0.0",
     "standard-version": "^9.5.0",
     "vue-template-compiler": "^2.6.14"
+  },
+  "peerDependencies": {
+    "vue": "^2.6.14",
+    "element-ui": "^2.15.13",
+    "vxe-table": "^3.6.13"
   }
 }

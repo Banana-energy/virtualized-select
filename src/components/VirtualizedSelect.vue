@@ -186,7 +186,6 @@ export default {
       inputWidth: 0,
       inputLength: 20,
       multipleQuery: '',
-      filterOptions: this.options,
       initialInputHeight: 0
     }
   },
@@ -283,6 +282,9 @@ export default {
     filterOptions () {
       this.$refs['virtualized-select']?.updatePlacement()
     }
+  },
+  created () {
+    this.filterOptions = this.options
   },
   mounted () {
     addResizeListener(this.$el, this.handleResize)
