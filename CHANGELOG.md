@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.4](https://github.com/Banana-energy/virtualized-select/compare/v0.0.3...v0.0.4) (2023-07-21)
+
+
+### Features
+
+* 优化性能 ([7427133](https://github.com/Banana-energy/virtualized-select/commit/7427133b83f6b64da9f3f40d31ddec8cb5479eca))
+
 ### [0.0.3](https://github.com/Banana-energy/virtualized-select/compare/v0.0.2...v0.0.3) (2023-07-21)
 
 
