@@ -6,7 +6,15 @@
   "description": "A virtualized select component for Vue2",
   "repository": "https://github.com/Banana-energy/virtualized-select",
   "main": "dist/virtualized-select.umd.min.js",
-  "keywords": ["vue", "Banana Energy", "select", "element-ui", "vxe-table", "virtualized-select","virtual select"],
+  "keywords": [
+    "vue",
+    "Banana Energy",
+    "select",
+    "element-ui",
+    "vxe-table",
+    "virtualized-select",
+    "virtual select"
+  ],
   "license": "MIT",
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -19,7 +27,6 @@
   "dependencies": {
     "core-js": "^3.8.3",
     "element-ui": "^2.15.13",
-    "standard-version": "^9.5.0",
     "vue": "^2.6.14",
     "vxe-table": "^3.6.13",
     "xe-utils": "^3.5.11"
@@ -38,6 +45,7 @@
     "eslint-plugin-vue": "^8.0.3",
     "sass": "^1.32.7",
     "sass-loader": "^12.0.0",
+    "standard-version": "^9.5.0",
     "vue-template-compiler": "^2.6.14"
   }
 }
