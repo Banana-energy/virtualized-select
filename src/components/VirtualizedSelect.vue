@@ -167,6 +167,10 @@ export default {
     collapseTags: {
       type: Boolean,
       default: false
+    },
+    reserveKeyword: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -301,6 +305,10 @@ export default {
           arr = [...this.value]
           arr.splice(index, 1)
           this.$emit('input', arr)
+        }
+        if (!this.reserveKeyword) {
+          this.filterOptions = this.options
+          this.multipleQuery = ''
         }
       } else {
         this.inputShow = label
