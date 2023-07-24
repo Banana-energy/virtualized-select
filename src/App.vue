@@ -4,6 +4,15 @@
     <el-button size="small" type="primary" @click="getList(10)">加载10w数据</el-button>
     <el-divider />
     <el-form ref="form" :model="form">
+      <el-form-item label="ElSelect">
+        <el-select
+          v-model="form.signal"
+          clearable
+          filterable
+        >
+          <el-option v-for="item in 10" :key="item" :value="item" :label="item"></el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item label="单选">
         <virtualized-select
           v-model="form.signal"
@@ -14,8 +23,9 @@
         <virtualized-select
           v-model="form.multiple"
           multiple
-          :clearable="false"
           :options="list"
+          :virtual-list-props="{ height: 300 }"
+          reserve-keyword
         />
       </el-form-item>
     </el-form>
@@ -33,13 +43,13 @@ export default {
   data () {
     return {
       form: {
-        signal: '',
-        multiple: []
+        signal: '213ce',
+        multiple: ['213ce']
       },
-      list: new Array(10000 * 3).fill().map((_, index) => ({
+      list: Object.freeze(new Array(10000 * 3).fill().map((_, index) => ({
         label: index.toString(),
         value: index
-      }))
+      })))
     }
   },
   methods: {

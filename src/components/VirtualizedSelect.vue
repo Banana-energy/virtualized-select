@@ -90,17 +90,13 @@
         </el-input>
       </div>
     </template>
-    <template v-if="!filterOptions.length" #dropdown>
-      <el-empty :image-size="50" description="暂无数据"/>
-    </template>
-    <template v-else #dropdown>
+    <template #dropdown>
       <vxe-list
+        v-if="filterOptions.length"
         ref="vxe-list"
-        v-bind="virtualListProps"
+        v-bind="virtualListAttrs"
         :data="filterOptions"
         :loading="loading"
-        :style="{width: maxOptionWidth+'px'}"
-        height="180"
       >
         <template #default="{ items }">
           <div
@@ -115,6 +111,10 @@
           </div>
         </template>
       </vxe-list>
+      <div v-if="noMatched" class="vxe-select-option no-match">无匹配数据</div>
+      <slot v-if="!noMatched && !filterOptions.length" name="empty">
+        <div class="vxe-select-option no-match">无数据</div>
+      </slot>
     </template>
   </vxe-pulldown>
 </template>
@@ -182,6 +182,7 @@ export default {
       inputHovering: false,
       focused: false,
       inputShow: '',
+      inputPlaceholder: '',
       inputWidth: 0,
       inputLength: 20,
       multipleQuery: '',
@@ -189,6 +190,24 @@ export default {
     }
   },
   computed: {
+    hasValue () {
+      const value = this.value
+      return this.multiple
+        ? Array.isArray(value) && value.length > 0
+        : value !== undefined && value !== null && value !== ''
+    },
+    noMatched () {
+      return (!this.multiple && !this.selected && this.hasValue)
+    },
+    virtualListAttrs () {
+      return {
+        height: 180,
+        style: {
+          width: this.maxOptionWidth + 'px'
+        },
+        ...this.virtualListProps
+      }
+    },
     optionsMap () {
       const map = new Map()
       const valueKey = this.propsValue.value
@@ -198,14 +217,10 @@ export default {
       return Object.freeze(map)
     },
     showClose () {
-      const value = this.value
-      const hasValue = this.multiple
-        ? Array.isArray(value) && value.length > 0
-        : value !== undefined && value !== null && value !== ''
       return this.clearable &&
         !this.disabled &&
         this.inputHovering &&
-        hasValue
+        this.hasValue
     },
     iconClass () {
       return this.focused ? 'arrow-up is-reverse' : 'arrow-up'
@@ -225,14 +240,21 @@ export default {
       }
     },
     selectedLabel () {
-      return this.selected?.[this.propsValue.label] || '无匹配项'
+      if (this.selected) {
+        return this.selected[this.propsValue.label]
+      }
+      if (this.multiple) {
+        return this.value?.[0]
+      } else {
+        return this.value
+      }
     },
     placeholderShow () {
       if (this.multiple) {
         return this.value?.length || this.multipleQuery ? '' : this.placeholder
       } else {
         const value = this.optionsMap.get(this.value)?.[this.propsValue.label]
-        return value || (this.inputShow ? '' : this.placeholder)
+        return value || (this.inputShow ? this.inputShow : (this.inputPlaceholder || this.placeholder))
       }
     },
     maxOptionWidth () {
@@ -247,7 +269,7 @@ export default {
       })
       let ctx = document.createElement('canvas').getContext('2d')
       ctx.font = '14px sans-serif'
-      const max = ctx.measureText(maxStr).width + 20
+      const max = ctx.measureText(maxStr).width + (14 * 1.5 * 2)
       ctx = null
       const targetWidth = this.$refs['virtualized-select']?.$refs.content.offsetWidth
       const minWidth = parseFloat(targetWidth || 191)
@@ -278,19 +300,26 @@ export default {
         if (this.multiple && Array.isArray(newVal) && newVal.length && newVal[0] === undefined) {
           this.$emit('input', [])
         }
-        if (!this.collapseTags) {
-          this.$nextTick(() => {
-            this.$refs['virtualized-select']?.updatePlacement()
-          })
-        }
       },
       deep: true
     },
-    filterOptions () {
-      this.$refs['virtualized-select']?.updatePlacement()
+    focused (val) {
+      if (!val) {
+        if (!this.multiple) {
+          this.inputShow = this.value
+          this.inputPlaceholder = this.placeholder
+          this.filterOptions = this.options
+        } else {
+          this.multipleQuery = ''
+          this.filterOptions = this.options
+        }
+      }
     }
   },
   created () {
+    if (!this.multiple) {
+      this.inputShow = this.value
+    }
     this.filterOptions = this.options
   },
   mounted () {
@@ -314,10 +343,21 @@ export default {
       if (this.disabled) {
         return
       }
+      let value = this.value
       if (this.multiple) {
         this.$refs['multiple-query'].focus()
+        value = this.value?.[0]
+      } else {
+        this.inputShow = ''
+        this.inputPlaceholder = this.value
       }
       this.$refs['virtualized-select'].showPanel()
+      const index = this.filterOptions.findIndex(item => item[this.propsValue.value] === value)
+      if (index !== -1) {
+        this.$nextTick(() => {
+          this.$refs['vxe-list'].scrollTo(0, index * 36)
+        })
+      }
       this.focused = true
     },
     handleSelect (item) {
@@ -380,6 +420,8 @@ export default {
         this.filterOptions = this.options
         this.$emit('input', [])
       } else {
+        this.$refs['virtualized-select'].hidePanel()
+        this.focused = false
         this.inputShow = ''
         this.filterOptions = this.options
         this.$emit('input', '')
@@ -401,6 +443,7 @@ export default {
     resetInputHeight () {
       this.$nextTick(() => {
         if (!this.$refs['multiple-input']) return
+        this.$refs['virtualized-select'].updatePlacement()
         const inputChildNodes = this.$refs['multiple-input'].$el.childNodes
         const input = [].filter.call(inputChildNodes, item => item.tagName === 'INPUT')[0]
         const tags = this.$refs.tags
@@ -408,8 +451,7 @@ export default {
         const sizeInMap = this.initialInputHeight || 40
         input.style.height = this.value.length === 0
           ? sizeInMap + 'px'
-          : Math.max(
-            tags ? (tagsHeight + (tagsHeight > sizeInMap ? 6 : 0)) : 0, sizeInMap
+          : Math.max(tags ? (tagsHeight + (tagsHeight > sizeInMap ? 6 : 0)) : 0, sizeInMap
           ) + 'px'
       })
     }
@@ -430,6 +472,16 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  &.no-match {
+    justify-content: center;
+    color: #999;
+    cursor: default;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
 }
 
 .vxe-select-option:hover {
@@ -472,21 +524,24 @@ export default {
   overflow-x: hidden;
   overflow-y: auto;
   padding: 4px 0;
-  max-height: 200px;
   min-height: 40px;
   border-radius: 4px;
   border: 1px solid #dadce0;
   box-shadow: 0 0 6px 2px #00000019;
   background-color: #fff;
 
-  .el-empty {
-    padding: 10px 0;
-  }
-
   /*滚动条整体部分*/
   & ::-webkit-scrollbar {
-    width: 10px;
+    width: 8px;
     height: 10px;
+    opacity: 0;
+
+    &:hover,
+    &:active,
+    &:focus {
+      opacity: 1;
+      transition: opacity 340ms ease-out;
+    }
   }
 
   /*滚动条的轨道*/
@@ -496,18 +551,14 @@ export default {
 
   /*滚动条里面的小方块，能向上向下移动*/
   & ::-webkit-scrollbar-thumb {
-    background-color: #E1E1E1AD;
+    background-color: rgba(144, 147, 153, .3);
+    transition: .3s background-color;
     border-radius: 5px;
     border: 1px solid #F1F1F1;
-    box-shadow: inset 0 0 6px #0000004C;
-  }
 
-  & ::-webkit-scrollbar-thumb:hover {
-    background-color: #E1E1E1E0;
-  }
-
-  & ::-webkit-scrollbar-thumb:active {
-    background-color: #E1E1E1FF;
+    &:hover {
+      background-color: rgba(144, 147, 153, .5);
+    }
   }
 
   /*边角，即两个滚动条的交汇处*/
