@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.6](https://github.com/Banana-energy/virtualized-select/compare/v0.0.5...v0.0.6) (2023-07-24)
+
+
+### Features
+
+* 优化placeholder、优化无选项展示，提供插槽、优化滚动条样式、点击下拉框滚动到已选项位置 ([8b1624c](https://github.com/Banana-energy/virtualized-select/commit/8b1624c56ee82c06360ba939446c085ec8017b69))
+
+
+### Bug Fixes
+
+* 修复无匹配项报错 ([9693d2d](https://github.com/Banana-energy/virtualized-select/commit/9693d2dd3a38ae6a2ba7315a2250af19a89233b5))
+
 ### [0.0.5](https://github.com/Banana-energy/virtualized-select/compare/v0.0.4...v0.0.5) (2023-07-21)
 
 

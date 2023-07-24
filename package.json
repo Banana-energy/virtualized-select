@@ -1,6 +1,6 @@
 {
   "name": "virtualized-select",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "private": false,
   "author": "Banana Energy <372728339@qq.com>",
   "description": "A virtualized select component for Vue2",
