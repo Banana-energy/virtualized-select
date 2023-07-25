@@ -201,7 +201,7 @@ export default {
     },
     virtualListAttrs () {
       return {
-        height: 180,
+        maxHeight: 180,
         style: {
           width: this.maxOptionWidth + 'px'
         },
