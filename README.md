@@ -9,6 +9,9 @@ Vue2.x component for virtualized select
 npm install virtualized-select
 ```
 
+## Update
+[更新日志](./CHANGELOG.md)
+
 ## Usage
 ```js
 import VirtualizedSelect from 'virtualized-select'
