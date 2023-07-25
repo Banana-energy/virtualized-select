@@ -1,7 +1,7 @@
 <template>
   <vxe-pulldown
-    ref="virtualized-select"
-    class="virtual-table el-select"
+    ref="vxe-pulldown"
+    class="el-select"
     transfer
     @hide-panel="focused = false"
   >
@@ -208,13 +208,26 @@ export default {
         ...this.virtualListProps
       }
     },
-    optionsMap () {
+    eachOptions () {
       const map = new Map()
       const valueKey = this.propsValue.value
+      let maxStr = ''
+      const labelKey = this.propsValue.label
       this.options.forEach(option => {
+        const str = option[labelKey]
+        const length = str.length
+        if (length > maxStr.length) {
+          maxStr = str
+        }
         map.set(option[valueKey], option)
       })
-      return Object.freeze(map)
+      return {
+        optionsMap: Object.freeze(map),
+        maxStr
+      }
+    },
+    optionsMap () {
+      return this.eachOptions.optionsMap
     },
     showClose () {
       return this.clearable &&
@@ -253,25 +266,17 @@ export default {
       if (this.multiple) {
         return this.value?.length || this.multipleQuery ? '' : this.placeholder
       } else {
-        const value = this.optionsMap.get(this.value)?.[this.propsValue.label]
+        const value = this.selected?.[this.propsValue.label]
         return value || (this.inputShow ? this.inputShow : (this.inputPlaceholder || this.placeholder))
       }
     },
     maxOptionWidth () {
-      let maxStr = ''
-      const labelKey = this.propsValue.label
-      this.options.forEach(option => {
-        const str = option[labelKey]
-        const length = str.length
-        if (length > maxStr.length) {
-          maxStr = str
-        }
-      })
+      const maxStr = this.eachOptions.maxStr
       let ctx = document.createElement('canvas').getContext('2d')
       ctx.font = '14px sans-serif'
       const max = ctx.measureText(maxStr).width + (14 * 1.5 * 2)
       ctx = null
-      const targetWidth = this.$refs['virtualized-select']?.$refs.content.offsetWidth
+      const targetWidth = this.$refs['vxe-pulldown']?.$refs.content.offsetWidth
       const minWidth = parseFloat(targetWidth || 191)
       return max < minWidth ? minWidth : max
     }
@@ -351,7 +356,7 @@ export default {
         this.inputShow = ''
         this.inputPlaceholder = this.value
       }
-      this.$refs['virtualized-select'].showPanel()
+      this.$refs['vxe-pulldown'].showPanel()
       const index = this.filterOptions.findIndex(item => item[this.propsValue.value] === value)
       if (index !== -1) {
         this.$nextTick(() => {
@@ -382,7 +387,7 @@ export default {
         this.inputShow = label
         this.$emit('input', value)
         this.focused = false
-        this.$refs['virtualized-select'].hidePanel()
+        this.$refs['vxe-pulldown'].hidePanel()
       }
     },
     handleFilter () {
@@ -420,7 +425,7 @@ export default {
         this.filterOptions = this.options
         this.$emit('input', [])
       } else {
-        this.$refs['virtualized-select'].hidePanel()
+        this.$refs['vxe-pulldown'].hidePanel()
         this.focused = false
         this.inputShow = ''
         this.filterOptions = this.options
@@ -443,7 +448,7 @@ export default {
     resetInputHeight () {
       this.$nextTick(() => {
         if (!this.$refs['multiple-input']) return
-        this.$refs['virtualized-select'].updatePlacement()
+        this.$refs['vxe-pulldown'].updatePlacement()
         const inputChildNodes = this.$refs['multiple-input'].$el.childNodes
         const input = [].filter.call(inputChildNodes, item => item.tagName === 'INPUT')[0]
         const tags = this.$refs.tags
@@ -467,8 +472,6 @@ export default {
   line-height: 36px;
   padding: 0 1.5em;
   font-size: 14px;
-  font-variant: tabular-nums;
-  font-feature-settings: "tnum";
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -482,88 +485,76 @@ export default {
       background-color: transparent;
     }
   }
-}
 
-.vxe-select-option:hover {
-  background-color: #f5f7fa;
-}
-
-.el-icon-check {
-  display: none;
-}
-
-.selected {
-  color: #409eff;
-  font-weight: 700;
+  &:hover {
+    background-color: #f5f7fa;
+  }
 
   > .el-icon-check {
-    display: inline-block;
-    font-weight: 700
+    display: none;
+  }
+
+  &.selected {
+    color: #409eff;
+    font-weight: 700;
+
+    > .el-icon-check {
+      display: inline-block;
+      font-weight: 700
+    }
   }
 }
-
-.loading {
-  width: 100%;
-  padding: 10px 0;
-  text-align: center;
-  color: #999;
-  font-size: 14px;
-}
-
-::v-deep .el-input__suffix {
-  display: flex;
-  align-items: center;
-}
-
 </style>
 
 <style lang="scss">
-.vxe-pulldown--wrapper {
-  width: 100%;
-  position: relative;
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding: 4px 0;
-  min-height: 40px;
-  border-radius: 4px;
-  border: 1px solid #dadce0;
-  box-shadow: 0 0 6px 2px #00000019;
-  background-color: #fff;
+.vxe-pulldown--panel.is--transfer {
+  > .vxe-pulldown--wrapper {
+    width: 100%;
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 4px 0;
+    min-height: 40px;
+    border-radius: 4px;
+    border: 1px solid #dadce0;
+    box-shadow: 0 0 6px 2px #00000019;
+    background-color: #fff;
 
-  /*滚动条整体部分*/
-  & ::-webkit-scrollbar {
-    width: 8px;
-    height: 10px;
-    opacity: 0;
+    /*滚动条整体部分*/
+    & ::-webkit-scrollbar {
+      width: 8px;
+      height: 10px;
+      opacity: 0;
 
-    &:hover,
-    &:active,
-    &:focus {
-      opacity: 1;
-      transition: opacity 340ms ease-out;
+      &:hover,
+      &:active,
+      &:focus {
+        opacity: 1;
+        transition: opacity 340ms ease-out;
+      }
     }
-  }
 
-  /*滚动条的轨道*/
-  & ::-webkit-scrollbar-track {
-    background-color: #FFFFFF;
-  }
-
-  /*滚动条里面的小方块，能向上向下移动*/
-  & ::-webkit-scrollbar-thumb {
-    background-color: rgba(144, 147, 153, .3);
-    transition: .3s background-color;
-    border-radius: 5px;
-    border: 1px solid #F1F1F1;
-
-    &:hover {
-      background-color: rgba(144, 147, 153, .5);
+    /*滚动条的轨道*/
+    & ::-webkit-scrollbar-track {
+      background-color: #FFFFFF;
     }
-  }
 
-  /*边角，即两个滚动条的交汇处*/
-  & ::-webkit-scrollbar-corner {
-    background-color: #FFFFFF;
+    /*滚动条里面的小方块，能向上向下移动*/
+    & ::-webkit-scrollbar-thumb {
+      background-color: rgba(144, 147, 153, .3);
+      transition: .3s background-color;
+      border-radius: 5px;
+      border: 1px solid #F1F1F1;
+
+      &:hover {
+        background-color: rgba(144, 147, 153, .5);
+      }
+    }
+
+    /*边角，即两个滚动条的交汇处*/
+    & ::-webkit-scrollbar-corner {
+      background-color: #FFFFFF;
+    }
   }
 }
 </style>
