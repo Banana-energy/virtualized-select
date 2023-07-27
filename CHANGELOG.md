@@ -1,5 +1,14 @@
 # Changelog
 
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### [0.0.8](https://github.com/Banana-energy/virtualized-select/compare/v0.0.7...v0.0.8) (2023-07-27)
+
+
+### Features
+
+* 支持传入对象作为value ([db8aeda](https://github.com/Banana-energy/virtualized-select/commit/db8aeda54ff14360de158d5c9b26a359be661525))
+
 ### [0.0.7](https://github.com/Banana-energy/virtualized-select/compare/v0.0.6...v0.0.7) (2023-07-25)
 
 
