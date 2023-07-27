@@ -6,17 +6,20 @@
     <el-form ref="form" :model="form">
       <el-form-item label="ElSelect">
         <el-select
-          v-model="form.signal"
+          v-model="form.multiple"
           clearable
+          multiple
           filterable
+          value-key="value"
         >
-          <el-option v-for="item in 10" :key="item" :value="item" :label="item"></el-option>
+          <el-option v-for="item in 10" :key="item" :value="{label:item,value:item}" :label="item"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="单选">
         <virtualized-select
           v-model="form.signal"
           :options="list"
+          value-key="value"
         />
       </el-form-item>
       <el-form-item label="多选">
@@ -26,6 +29,7 @@
           :options="list"
           :virtual-list-props="{ height: 300 }"
           reserve-keyword
+          value-key="value"
         />
       </el-form-item>
     </el-form>
@@ -43,7 +47,10 @@ export default {
   data () {
     return {
       form: {
-        signal: '213ce',
+        signal: {
+          label: '1',
+          value: 1
+        },
         multiple: ['213ce']
       },
       list: Object.freeze(new Array(10000 * 3).fill().map((_, index) => ({

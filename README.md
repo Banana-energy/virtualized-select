@@ -64,4 +64,4 @@ export default {
 ## TODO
 - [ ] size
 - [ ] 支持创建不存在的值
-- [ ] 支持对象做值，类似el-select传入value-key
+- [x] ~~_支持对象做值，类似el-select传入value-key_~~

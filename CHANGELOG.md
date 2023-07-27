@@ -13,7 +13,10 @@
 
 ### Features
 
-* 优化placeholder、优化无选项展示，提供插槽、优化滚动条样式、点击下拉框滚动到已选项位置 ([8b1624c](https://github.com/Banana-energy/virtualized-select/commit/8b1624c56ee82c06360ba939446c085ec8017b69))
+* 优化placeholder
+* 优化无选项展示，提供插槽
+* 优化滚动条样式
+* 点击下拉框滚动到已选项位置 ([8b1624c](https://github.com/Banana-energy/virtualized-select/commit/8b1624c56ee82c06360ba939446c085ec8017b69))
 
 
 ### Bug Fixes

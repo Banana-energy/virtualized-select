@@ -49,7 +49,7 @@
             </el-tag>
           </span>
           <transition-group v-if="!collapseTags" @after-leave="resetInputHeight">
-            <el-tag v-for="(item,index) in value" :key="item" closable type="info" @close="deleteTag(index)">
+            <el-tag v-for="(item,index) in computedValue" :key="item" closable type="info" @close="deleteTag(index)">
               <span v-if="optionsMap.has(item)" class="el-select__tags-text">
                 {{ optionsMap.get(item)[propsValue.label] }}
               </span>
@@ -102,7 +102,7 @@
           <div
             v-for="item in items"
             :key="item[propsValue.value]"
-            :class="{ selected: multiple ? value.includes(item[propsValue.value]) : value === item[propsValue.value] }"
+            :class="{ selected: multiple ? computedValue.includes(item[propsValue.value]) : computedValue === item[propsValue.value] }"
             class="vxe-select-option"
             @click="handleSelect(item)"
           >
@@ -121,12 +121,13 @@
 
 <script>
 import { addResizeListener, removeResizeListener } from 'element-ui/src/utils/resize-event'
+import { getValueByPath } from 'element-ui/src/utils/util'
 
 export default {
   name: 'VirtualizedSelect',
   props: {
     value: {
-      type: [String, Number, Array],
+      type: [String, Number, Array, Object],
       default: ''
     },
     options: {
@@ -190,6 +191,15 @@ export default {
     }
   },
   computed: {
+    computedValue () {
+      if (this.valueKey) {
+        if (this.multiple) {
+          return this.value?.map(item => getValueByPath(item, this.valueKey) || item) || []
+        }
+        return getValueByPath(this.value, this.valueKey)
+      }
+      return this.value
+    },
     hasValue () {
       const value = this.value
       return this.multiple
@@ -247,9 +257,9 @@ export default {
     },
     selected () {
       if (!this.multiple) {
-        return this.optionsMap.get(this.value)
+        return this.optionsMap.get(this.computedValue)
       } else {
-        return this.optionsMap.get(this.value?.[0])
+        return this.optionsMap.get(this.computedValue?.[0])
       }
     },
     selectedLabel () {
@@ -257,9 +267,9 @@ export default {
         return this.selected[this.propsValue.label]
       }
       if (this.multiple) {
-        return this.value?.[0]
+        return this.computedValue?.[0]
       } else {
-        return this.value
+        return this.computedValue
       }
     },
     placeholderShow () {
@@ -285,9 +295,9 @@ export default {
     optionsMap (val) {
       if (!this.multiple) {
         this.filterOptions = Array.isArray(this.options) ? this.options : []
-        const value = val.get(this.value)?.[this.propsValue.label]
+        const value = val.get(this.computedValue)?.[this.propsValue.label]
         if (this.value && !value) {
-          this.inputShow = this.value
+          this.inputShow = this.computedValue
           return
         }
         this.inputShow = value || ''
@@ -311,7 +321,7 @@ export default {
     focused (val) {
       if (!val) {
         if (!this.multiple) {
-          this.inputShow = this.value
+          this.inputShow = this.computedValue
           this.inputPlaceholder = this.placeholder
           this.filterOptions = this.options
         } else {
@@ -323,7 +333,7 @@ export default {
   },
   created () {
     if (!this.multiple) {
-      this.inputShow = this.value
+      this.inputShow = this.computedValue
     }
     this.filterOptions = this.options
   },
@@ -348,29 +358,31 @@ export default {
       if (this.disabled) {
         return
       }
-      let value = this.value
+      let value = this.computedValue
       if (this.multiple) {
         this.$refs['multiple-query'].focus()
-        value = this.value?.[0]
+        value = this.computedValue?.[0]
       } else {
         this.inputShow = ''
-        this.inputPlaceholder = this.value
+        this.inputPlaceholder = this.computedValue
       }
       this.$refs['vxe-pulldown'].showPanel()
-      const index = this.filterOptions.findIndex(item => item[this.propsValue.value] === value)
-      if (index !== -1) {
-        this.$nextTick(() => {
-          this.$refs['vxe-list'].scrollTo(0, index * 36)
-        })
+      if (value) {
+        const index = this.filterOptions.findIndex(item => item[this.propsValue.value] === value)
+        if (index !== -1) {
+          this.$nextTick(() => {
+            this.$refs['vxe-list'].scrollTo(0, index * 36)
+          })
+        }
       }
       this.focused = true
     },
     handleSelect (item) {
-      const value = item[this.propsValue.value]
+      const value = this.valueKey ? item : item[this.propsValue.value]
       const label = item[this.propsValue.label]
       if (this.multiple) {
         let arr = []
-        const index = this.value.indexOf(value)
+        const index = this.computedValue.indexOf(value)
         if (index === -1) {
           arr = [...this.value, value]
           this.$emit('input', arr)
