@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.9](https://github.com/Banana-energy/virtualized-select/compare/v0.0.8...v0.0.9) (2023-07-28)
+
+
+### Features
+
+* emit一些事件 ([f4dda4e](https://github.com/Banana-energy/virtualized-select/commit/f4dda4e8fb5308a027d806a4be9c413b512ac320))
+
 ### [0.0.8](https://github.com/Banana-energy/virtualized-select/compare/v0.0.7...v0.0.8) (2023-07-27)
 
 
