@@ -28,7 +28,7 @@
     <template v-else #default>
       <div class="el-select" style="width: 100%" @click.stop="handleFocus">
         <div ref="tags" :style="{width: '100%' , 'max-width': inputWidth - 62 + 'px'}" class="el-select__tags">
-          <span v-if="collapseTags && value.length">
+          <span v-if="collapseTags && value && value.length">
             <el-tag
               closable
               disable-transitions
@@ -94,9 +94,9 @@
       <vxe-list
         v-if="filterOptions.length"
         ref="vxe-list"
-        v-bind="virtualListAttrs"
         :data="filterOptions"
         :loading="loading"
+        v-bind="virtualListAttrs"
       >
         <template #default="{ items }">
           <div
@@ -319,6 +319,8 @@ export default {
       deep: true
     },
     focused (val) {
+      this.$emit('focus', val)
+      this.$emit('visible-change', val)
       if (!val) {
         if (!this.multiple) {
           this.inputShow = this.computedValue
@@ -378,6 +380,7 @@ export default {
       this.focused = true
     },
     handleSelect (item) {
+      this.$emit('change', item)
       const value = this.valueKey ? item : item[this.propsValue.value]
       const label = item[this.propsValue.label]
       if (this.multiple) {
@@ -428,10 +431,12 @@ export default {
     },
     deleteTag (index) {
       const value = [...this.value]
-      value.splice(index, 1)
+      const deleteValue = value.splice(index, 1)
       this.$emit('input', value)
+      this.$emit('remove-tag', deleteValue[0])
     },
     handleClear () {
+      this.$emit('clear')
       if (this.multiple) {
         this.multipleQuery = ''
         this.filterOptions = this.options
@@ -466,7 +471,7 @@ export default {
         const tags = this.$refs.tags
         const tagsHeight = tags ? Math.round(tags.getBoundingClientRect().height) : 0
         const sizeInMap = this.initialInputHeight || 40
-        input.style.height = this.value.length === 0
+        input.style.height = (!this.value || this.value.length === 0)
           ? sizeInMap + 'px'
           : Math.max(tags ? (tagsHeight + (tagsHeight > sizeInMap ? 6 : 0)) : 0, sizeInMap
           ) + 'px'
